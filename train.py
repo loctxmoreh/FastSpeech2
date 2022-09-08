@@ -96,6 +96,7 @@ def main(args, configs):
                     optimizer.step_and_update_lr()
                     optimizer.zero_grad()
 
+                # TODO: mitigate .item() calls
                 if step % log_step == 0:
                     losses = [l.item() for l in losses]
                     message1 = "Step {}/{}, ".format(step, total_step)

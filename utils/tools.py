@@ -91,6 +91,7 @@ def log(
 def get_mask_from_lengths(lengths, max_len=None):
     batch_size = lengths.shape[0]
     if max_len is None:
+        # TODO: mitigate .item() calls
         max_len = torch.max(lengths).item()
 
     ids = torch.arange(0, max_len).unsqueeze(0).expand(batch_size, -1).to(device)
@@ -108,6 +109,7 @@ def expand(values, durations):
 
 def synth_one_sample(targets, predictions, vocoder, model_config, preprocess_config):
 
+    # TODO: mitigate .item() calls
     basename = targets[0][0]
     src_len = predictions[8][0].item()
     mel_len = predictions[9][0].item()

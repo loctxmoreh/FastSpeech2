@@ -45,6 +45,7 @@ def evaluate(model, step, configs, logger=None, vocoder=None):
                 # Cal Loss
                 losses = Loss(batch, output)
 
+                # TODO: mitigate .item() calls
                 for i in range(len(losses)):
                     loss_sums[i] += losses[i].item() * len(batch[0])
 
