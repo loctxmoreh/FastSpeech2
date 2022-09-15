@@ -1,6 +1,127 @@
+# [Moreh] Running on HAC VM - Moreh AI Framework
+
+## Prepare
+
+### Data
+Download and extract the [LJSpeech dataset](https://keithito.com/LJ-Speech-Dataset/).
+The dataset directory should be named `LJSpeech-1.1`.
+
+### Environment
+First, create conda environment:
+```bash
+conda create -n fastspeech python=3.8
+conda activate fastspeech
+```
+#### On HAC VM
+Install `torch` first:
+```bash
+conda install -y torchvision torchaudio numpy protobuf==3.13.0 pytorch==1.7.1 cpuonly -c pytorch
+```
+Then force update Moreh with latest version (`22.9.0` at the moment this document is written):
+```bash
+update-moreh --force --target 22.9.0
+```
+Comment out `torch` in `requirements.txt`, and then install the rest of the dependencies:
+```bash
+pip install -r requirements.txt
+```
+#### On A100 VM
+Install the dependencies:
+```bash
+pip install -r requirements.txt
+```
+Then, override `torch` with the one with correct CUDA:
+```bash
+pip install torch==1.7.1+cu110 torchvision==0.8.2+cu110 torchaudio==0.7.2 -f https://download.pytorch.org/whl/torch_stable.html
+```
+### Code
+Clone the repo:
+```bash
+git clone https://github.com/ming024/FastSpeech2
+cd FastSpeech2
+```
+
+## Run
+
+Edit `./config/LJSpeech/preprocess.yaml` by changing `path.corpus_path` to point
+to the actual location of `LJSpeech-1.1` dataset on the machine.
+
+### Preprocessing
+First, run:
+```bash
+python3 prepare_align.py config/LJSpeech/preprocess.yaml
+```
+for some preparations.
+Then, download the alignment for LJSpeech dataset [here](https://drive.google.com/drive/folders/1DBRkALpPd6FL9gjHMmMEdHODmkgNIIK4?usp=sharing).
+The file is named `LJSpeech.zip`. Put it in `./preprocessed_data/LJSpeech/` and
+then unzip it. It will be extracted to a directory named `TextGrid` within
+`./preprocessed_data/LJSpeech/`.
+After that, run the preprocessing script:
+```bash
+python3 preprocess.py config/LJSpeech/preprocess.yaml
+```
+
+### Train
+First, edit `./config/LJSpeech/train.yaml` by adjusting `step.total_step`, `step.log_step`
+and `step.save_step` to appropriate values. The recommended values are `total_step`
+from `900000` to `9000`, `log_step` from `100` to `1000` and `save_step` from
+`100000` to `1000`.
+
+Then, train the model with:
+```bash
+python3 train.py -p config/LJSpeech/preprocess.yaml -m config/LJSpeech/model.yaml -t config/LJSpeech/train.yaml
+```
+
+**NOTE**: when train on A100 VM, you may encounter this error:
+```
+Traceback (most recent call last):
+  File "train.py", line 8, in <module>
+    from torch.utils.tensorboard import SummaryWriter
+  File "/data/work/anaconda3/envs/fastspeech2-torch/lib/python3.8/site-packages/torch/utils/tensorboard/__init__.py"
+, line 8, in <module>
+    from .writer import FileWriter, SummaryWriter  # noqa F401
+  File "/data/work/anaconda3/envs/fastspeech2-torch/lib/python3.8/site-packages/torch/utils/tensorboard/writer.py",
+line 10, in <module>
+    from tensorboard.compat.proto.event_pb2 import SessionLog
+  File "/data/work/anaconda3/envs/fastspeech2-torch/lib/python3.8/site-packages/tensorboard/compat/proto/event_pb2.p
+y", line 17, in <module>
+    from tensorboard.compat.proto import summary_pb2 as tensorboard_dot_compat_dot_proto_dot_summary__pb2
+  File "/data/work/anaconda3/envs/fastspeech2-torch/lib/python3.8/site-packages/tensorboard/compat/proto/summary_pb$
+.py", line 17, in <module>
+    from tensorboard.compat.proto import tensor_pb2 as tensorboard_dot_compat_dot_proto_dot_tensor__pb2
+  File "/data/work/anaconda3/envs/fastspeech2-torch/lib/python3.8/site-packages/tensorboard/compat/proto/tensor_pb2$
+py", line 16, in <module>
+    from tensorboard.compat.proto import resource_handle_pb2 as tensorboard_dot_compat_dot_proto_dot_resource__hand$
+e__pb2
+  File "/data/work/anaconda3/envs/fastspeech2-torch/lib/python3.8/site-packages/tensorboard/compat/proto/resource_h$
+ndle_pb2.py", line 16, in <module>
+    from tensorboard.compat.proto import tensor_shape_pb2 as tensorboard_dot_compat_dot_proto_dot_tensor__shape__pb$
+  File "/data/work/anaconda3/envs/fastspeech2-torch/lib/python3.8/site-packages/tensorboard/compat/proto/tensor_sha$
+e_pb2.py", line 36, in <module>
+    _descriptor.FieldDescriptor(
+  File "/data/work/anaconda3/envs/fastspeech2-torch/lib/python3.8/site-packages/google/protobuf/descriptor.py", lin$
+ 560, in __new__
+    _message.Message._CheckCalledFromGeneratedFile()
+TypeError: Descriptors cannot not be created directly.
+If this call came from a _pb2.py file, your generated code is out of date and must be regenerated with protoc >= 3.$
+9.0.
+If you cannot immediately regenerate your protos, some other possible workarounds are:
+ 1. Downgrade the protobuf package to 3.20.x or lower.
+ 2. Set PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION=python (but this will use pure-Python parsing and will be much slowe$
+).
+
+More information: https://developers.google.com/protocol-buffers/docs/news/2022-05-06#python-updates
+```
+To resolve this issue by setting the `PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION` to `python`
+```bash
+export PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION=python
+```
+
+# Original README content:
+---
 # FastSpeech 2 - PyTorch Implementation
 
-This is a PyTorch implementation of Microsoft's text-to-speech system [**FastSpeech 2: Fast and High-Quality End-to-End Text to Speech**](https://arxiv.org/abs/2006.04558v1). 
+This is a PyTorch implementation of Microsoft's text-to-speech system [**FastSpeech 2: Fast and High-Quality End-to-End Text to Speech**](https://arxiv.org/abs/2006.04558v1).
 This project is based on [xcmyz's implementation](https://github.com/xcmyz/FastSpeech) of FastSpeech. Feel free to use/modify the code.
 
 There are several versions of FastSpeech 2.
@@ -16,7 +137,7 @@ On the other hand, pitch spectrograms extracted by continuous wavelet transform 
 - 2021/2/26: Support MelGAN and HiFi-GAN vocoder
 
 # Audio Samples
-Audio samples generated by this implementation can be found [here](https://ming024.github.io/FastSpeech2/). 
+Audio samples generated by this implementation can be found [here](https://ming024.github.io/FastSpeech2/).
 
 # Quickstart
 
@@ -47,7 +168,7 @@ python3 synthesize.py --text "YOUR_DESIRED_TEXT"  --speaker_id SPEAKER_ID --rest
 
 The generated utterances will be put in ``output/result/``.
 
-Here is an example of synthesized mel-spectrogram of the sentence "Printing, in the only sense with which we are at present concerned, differs from most if not from all the arts and crafts represented in the Exhibition", with the English single-speaker TTS model.  
+Here is an example of synthesized mel-spectrogram of the sentence "Printing, in the only sense with which we are at present concerned, differs from most if not from all the arts and crafts represented in the Exhibition", with the English single-speaker TTS model.
 ![](./img/synthesized_melspectrogram.png)
 
 ## Batch Inference
@@ -79,8 +200,8 @@ The supported datasets are
 We take LJSpeech as an example hereafter.
 
 ## Preprocessing
- 
-First, run 
+
+First, run
 ```
 python3 prepare_align.py config/LJSpeech/preprocess.yaml
 ```
@@ -95,7 +216,7 @@ After that, run the preprocessing script by
 python3 preprocess.py config/LJSpeech/preprocess.yaml
 ```
 
-Alternately, you can align the corpus by yourself. 
+Alternately, you can align the corpus by yourself.
 Download the official MFA package and run
 ```
 ./montreal-forced-aligner/bin/mfa_align raw_data/LJSpeech/ lexicon/librispeech-lexicon.txt english preprocessed_data/LJSpeech
@@ -151,8 +272,8 @@ Please inform me if you find any mistakes in this repo, or any useful tips to tr
 ```
 @INPROCEEDINGS{chien2021investigating,
   author={Chien, Chung-Ming and Lin, Jheng-Hao and Huang, Chien-yu and Hsu, Po-chun and Lee, Hung-yi},
-  booktitle={ICASSP 2021 - 2021 IEEE International Conference on Acoustics, Speech and Signal Processing (ICASSP)}, 
-  title={Investigating on Incorporating Pretrained and Learnable Speaker Representations for Multi-Speaker Multi-Style Text-to-Speech}, 
+  booktitle={ICASSP 2021 - 2021 IEEE International Conference on Acoustics, Speech and Signal Processing (ICASSP)},
+  title={Investigating on Incorporating Pretrained and Learnable Speaker Representations for Multi-Speaker Multi-Style Text-to-Speech},
   year={2021},
   volume={},
   number={},
