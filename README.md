@@ -26,13 +26,17 @@ Comment out `torch` in `requirements.txt`, and then install the rest of the depe
 pip install -r requirements.txt
 ```
 #### On A100 VM
-Install the dependencies:
+Comment out `torch` in `requirements.txt`, and then install the dependencies:
 ```bash
 pip install -r requirements.txt
 ```
-Then, override `torch` with the one with correct CUDA:
+Then, install `torch` with correct CUDA:
 ```bash
+# torch==1.7.1
 pip install torch==1.7.1+cu110 torchvision==0.8.2+cu110 torchaudio==0.7.2 -f https://download.pytorch.org/whl/torch_stable.html
+
+# or torch==1.12.1
+conda install pytorch torchvision torchaudio cudatoolkit=1.13 -c pytorch
 ```
 ### Code
 Clone the repo:
@@ -66,6 +70,13 @@ First, edit `./config/LJSpeech/train.yaml` by adjusting `step.total_step`, `step
 and `step.save_step` to appropriate values. The recommended values are `total_step`
 from `900000` to `9000`, `log_step` from `100` to `1000` and `save_step` from
 `100000` to `1000`.
+
+Then, extract the HifiGAN model as a vocoder:
+```bash
+cd hifigan/
+unzip ./generator_LJSpeech.pth.tar.zip
+cd ../
+```
 
 Then, train the model with:
 ```bash
