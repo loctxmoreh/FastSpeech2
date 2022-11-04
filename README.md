@@ -38,6 +38,12 @@ pip install torch==1.7.1+cu110 torchvision==0.8.2+cu110 torchaudio==0.7.2 -f htt
 # or torch==1.12.1
 conda install pytorch torchvision torchaudio cudatoolkit=1.13 -c pytorch
 ```
+
+Finally, fix `protobuf` to version 3.13.0:
+```bash
+pip install protobuf==3.13.0
+```
+
 ### Code
 Clone the repo:
 ```bash
@@ -81,51 +87,6 @@ cd ../
 Then, train the model with:
 ```bash
 python3 train.py -p config/LJSpeech/preprocess.yaml -m config/LJSpeech/model.yaml -t config/LJSpeech/train.yaml
-```
-
-**NOTE**: when train on A100 VM, you may encounter this error:
-```
-Traceback (most recent call last):
-  File "train.py", line 8, in <module>
-    from torch.utils.tensorboard import SummaryWriter
-  File "/data/work/anaconda3/envs/fastspeech2-torch/lib/python3.8/site-packages/torch/utils/tensorboard/__init__.py"
-, line 8, in <module>
-    from .writer import FileWriter, SummaryWriter  # noqa F401
-  File "/data/work/anaconda3/envs/fastspeech2-torch/lib/python3.8/site-packages/torch/utils/tensorboard/writer.py",
-line 10, in <module>
-    from tensorboard.compat.proto.event_pb2 import SessionLog
-  File "/data/work/anaconda3/envs/fastspeech2-torch/lib/python3.8/site-packages/tensorboard/compat/proto/event_pb2.p
-y", line 17, in <module>
-    from tensorboard.compat.proto import summary_pb2 as tensorboard_dot_compat_dot_proto_dot_summary__pb2
-  File "/data/work/anaconda3/envs/fastspeech2-torch/lib/python3.8/site-packages/tensorboard/compat/proto/summary_pb$
-.py", line 17, in <module>
-    from tensorboard.compat.proto import tensor_pb2 as tensorboard_dot_compat_dot_proto_dot_tensor__pb2
-  File "/data/work/anaconda3/envs/fastspeech2-torch/lib/python3.8/site-packages/tensorboard/compat/proto/tensor_pb2$
-py", line 16, in <module>
-    from tensorboard.compat.proto import resource_handle_pb2 as tensorboard_dot_compat_dot_proto_dot_resource__hand$
-e__pb2
-  File "/data/work/anaconda3/envs/fastspeech2-torch/lib/python3.8/site-packages/tensorboard/compat/proto/resource_h$
-ndle_pb2.py", line 16, in <module>
-    from tensorboard.compat.proto import tensor_shape_pb2 as tensorboard_dot_compat_dot_proto_dot_tensor__shape__pb$
-  File "/data/work/anaconda3/envs/fastspeech2-torch/lib/python3.8/site-packages/tensorboard/compat/proto/tensor_sha$
-e_pb2.py", line 36, in <module>
-    _descriptor.FieldDescriptor(
-  File "/data/work/anaconda3/envs/fastspeech2-torch/lib/python3.8/site-packages/google/protobuf/descriptor.py", lin$
- 560, in __new__
-    _message.Message._CheckCalledFromGeneratedFile()
-TypeError: Descriptors cannot not be created directly.
-If this call came from a _pb2.py file, your generated code is out of date and must be regenerated with protoc >= 3.$
-9.0.
-If you cannot immediately regenerate your protos, some other possible workarounds are:
- 1. Downgrade the protobuf package to 3.20.x or lower.
- 2. Set PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION=python (but this will use pure-Python parsing and will be much slowe$
-).
-
-More information: https://developers.google.com/protocol-buffers/docs/news/2022-05-06#python-updates
-```
-To resolve this issue by setting the `PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION` to `python`
-```bash
-export PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION=python
 ```
 
 # Original README content:
