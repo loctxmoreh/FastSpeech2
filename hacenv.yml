@@ -1,0 +1,12 @@
+# vim: set shiftwidth=2 tabstop=2 softtabstop=-1 expandtab:
+name: fastspeech2
+dependencies:
+  - python=3.8
+  - pip
+  - pip:
+    # - torch==1.10.0+cpuonly.moreh0.2.0
+    - torch==1.7.1+cu110.moreh22.11.3
+    - protobuf==3.13.0
+    - torchvision
+    - torchaudio
+    - -r requirements.txt
