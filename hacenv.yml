@@ -1,12 +1,23 @@
 # vim: set shiftwidth=2 tabstop=2 softtabstop=-1 expandtab:
 name: fastspeech2
+channels:
+  - pytorch
 dependencies:
   - python=3.8
+  - pytorch=1.7.1
+  - torchvision
+  - torchaudio
+  - cpuonly
+  - protobuf=3.13.0
   - pip
   - pip:
     # - torch==1.10.0+cpuonly.moreh0.2.0
-    - torch==1.7.1+cu110.moreh22.11.3
-    - protobuf==3.13.0
-    - torchvision
-    - torchaudio
+    # - torch==1.7.1+cu110.moreh22.12.1
+    # - protobuf==3.13.0
+    # - torchvision
+    # - torchaudio
     - -r requirements.txt
+
+# conda env create -f hacenv.yml
+# and then,
+# update-moreh --force --version 22.xx.xx
